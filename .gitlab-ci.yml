@@ -1,0 +1,26 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  image: node:16
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    when: on_success
+    expire_in: 1day
+
+#unit-test-job:
+#  stage: test
+#  image: node:16
+#  script:
+#    - npm test
+
+lint-test-job:
+  stage: test
+  image: node:16
+  script:
+    - npm run lint

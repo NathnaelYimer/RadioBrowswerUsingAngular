@@ -1,0 +1,240 @@
+<div class="d-flex justify-content-center" *ngIf="!station">
+  <div class="spinner-border" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
+
+<div class="container">
+  <h1 *ngIf="station">{{ station.name || "Loading.."}}</h1>
+
+  <h2>Details</h2>
+  <div *ngIf="!(!station)">
+    <table class="table table-condensed table-dark">
+      <tr>
+        <th>name</th>
+        <td>{{station.name}}</td>
+      </tr>
+      <tr>
+        <th>url</th>
+        <td>{{station.url}}</td>
+      </tr>
+      <tr>
+        <th>homepage</th>
+        <td>{{station.homepage}}</td>
+      </tr>
+      <tr>
+        <th>favicon</th>
+        <td>{{station.favicon}}</td>
+      </tr>
+      <tr>
+        <th>tags</th>
+        <td>{{station.tags}}</td>
+      </tr>
+      <tr>
+        <th>countrycode</th>
+        <td>{{station.countrycode}}</td>
+      </tr>
+      <tr>
+        <th>country</th>
+        <td>{{station.country}}</td>
+      </tr>
+      <tr>
+        <th>countrysubdivisioncode</th>
+        <td>{{station.iso_3166_2}}</td>
+      </tr>
+      <tr>
+        <th>countrysubdivision</th>
+        <td>{{station.state}}</td>
+      </tr>
+      <tr>
+        <th>languagecodes</th>
+        <td>{{station.languagecodes}}</td>
+      </tr>
+      <tr>
+        <th>languages</th>
+        <td>{{station.language}}</td>
+      </tr>
+      <tr>
+        <th>geoinfo</th>
+        <td>{{station.geo_lat}} / {{station.geo_long}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <span *ngIf="streaming_server_results">
+    <h2>Streaming server info</h2>
+    <div *ngFor="let result of streaming_server_results">
+      <table class="table table-condensed table-dark">
+        <tr>
+          <th>Server url</th>
+          <td>{{result.url}}</td>
+        </tr>
+        <tr *ngIf="result.statusurl">
+          <th>Server status url</th>
+          <td>{{result.statusurl}}</td>
+        </tr>
+        <tr *ngIf="result.error">
+          <th>Error</th>
+          <td>No server info available: {{result.error}}</td>
+        </tr>
+      </table>
+      <table class="table table-condensed table-dark" *ngIf="result.icecast">
+        <tr>
+          <td colspan="2">Found <a href="https://icecast.org">icecast server</a></td>
+        </tr>
+        <tr>
+          <th>Icecast id</th>
+          <td>{{result.icecast.server_id}}</td>
+        </tr>
+        <tr>
+          <th>Icecast location</th>
+          <td>{{result.icecast.location}}</td>
+        </tr>
+        <tr>
+          <th>Icecast admin</th>
+          <td>{{result.icecast.admin}}</td>
+        </tr>
+      </table>
+    </div>
+  </span>
+
+  <h2>Stream change history</h2>
+  <table class="table table-condensed table-dark">
+    <thead>
+      <th width="200">Change Time</th>
+      <th>Changes</th>
+    </thead>
+    <tbody>
+      <tr *ngFor="let change of list_changes">
+        <td>{{change.lastchangetime_iso8601 | localdate }}</td>
+        <td>
+          <pre class="text-light">
+Name:        {{change.name}}
+Url:         {{change.url}}
+Homepage:    {{change.homepage}}
+Favicon:     {{change.favicon}}
+Tags:        {{change.tags}}
+Countrycode: {{change.countrycode}}
+Country:     {{change.country}}
+State:       {{change.state}}
+Language:    {{change.language}}
+GeoLat:      {{change.geo_lat}}
+GeoLong:     {{change.geo_long}}
+          </pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="location">Stream location</h2>
+  <p>
+    Shows where the stream is located.
+  </p>
+  <div *ngIf="!(!station)">
+    <p class="p" *ngIf="!map_exact">
+      The stream does not have exact coordinates. So the location information
+      is not exact and only uses the countrycode "{{ station.countrycode }}" to
+      show you the approximate location of the country.
+      Country locations are provided by <a href="https://www.npmjs.com/package/world-countries">world-countries</a>.
+    </p>
+    <p class="p" *ngIf="map_exact">
+      The stream does provide exact coordinates.
+    </p>
+  </div>
+  <div id="mapid_show"></div>
+
+  <h2>Stream click history</h2>
+  A list of clicks in the last 24 hours.
+  <div class="chart">
+    <canvas #chart_div></canvas>
+  </div>
+
+  <h2>Check timings</h2>
+  Timings for checks by server in ms.
+  <div class="chart_timing">
+    <canvas #chart_div_timing></canvas>
+  </div>
+
+  <h2>Stream check history</h2>
+  A list of checks and their results. Checks are done from different servers over time.<br />
+  Streams do also send metadata which is displayed here and which may differ from the data in the radio-browser
+  database.
+  <table class="table table-condensed table-bordered bg-dark table-dark">
+    <thead>
+      <th width="200">Check time</th>
+      <th>Check-Server</th>
+      <th>Details</th>
+      <th>OverrideMetaData</th>
+    </thead>
+    <tbody>
+      <tr *ngFor="let check of list_checks" [ngClass]="{'bg-danger': check.ok === 0}">
+        <td>{{check.timestamp_iso8601 | localdate }}</td>
+        <td>{{check.source}}</td>
+        <td>
+          <b>Name:</b> {{check.name}}<br/>
+          <b>Codec:</b> {{check.codec}}<br/>
+          <b>Bitrate:</b> {{check.bitrate}}<br/>
+          <b>Sampling:</b> {{check.sampling}}<br/>
+          <b>Tags:</b> {{check.tags}}<br/>
+          <b>Homepage:</b> {{check.homepage}}<br/>
+          <b>Icon:</b> {{check.favicon}}<br/>
+          <b>Url:</b> {{check.loadbalancer}}<br/>
+          <b>Countrycode:</b> {{check.countrycode | uppercase }}<br/>
+          <b>Countrysubdivisioncode:</b> {{check.countrysubdivisioncode}}<br/>
+          <b>Languagecodes:</b> {{check.languagecodes}}<br/>
+          <b>GeoInfo:</b> {{check.geo_lat}} / {{check.geo_long}}<br/>
+          <b>Server:</b> {{check.server_software}}<br/>
+          <b>Timing:</b> {{check.timing_ms}} ms<br/>
+          <b>Description:</b> {{check.description}}
+        </td>
+        <td>
+          <span *ngIf="check.metainfo_overrides_database===1">&#x2713;</span>
+          <span *ngIf="check.metainfo_overrides_database!==1">&#x2717;</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Stream check steps</h2>
+  <p class="p">
+    A list of all steps that were done to check if the link is a real functioning streaming link.
+  </p>
+  <div *ngIf="!list_check_steps">Loading..</div>
+  <div *ngIf="list_check_steps">
+    <table class="table table-condensed table-dark">
+      <thead>
+        <tr>
+          <th width="200">Servername</th>
+          <th>Check steps</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let server of list_check_steps">
+          <td>{{server.servername}}</td>
+          <td>
+            <table ng-show="server.result.length > 0" class="table table-condensed table-dark">
+              <thead>
+                <tr>
+                  <th width="200">Check Time</th>
+                  <th>Url</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let step of server.data">
+                  <td>{{step.creation_iso8601 | localdate }}</td>
+                  <td>{{step.url}}</td>
+                  <td *ngIf="step.urltype">{{step.urltype}}</td>
+                  <td *ngIf="!step.urltype" [ngClass]="{'bg-danger': step.error}">{{step.error}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <span *ngIf="server.data.length === 0">Checking..</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="check_steps">.</h2>
+</div>

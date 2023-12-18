@@ -1,0 +1,47 @@
+<div class="container mb-3">
+  <div>
+    <div ngbDropdown class="d-inline-block">
+      <button class="btn btn-outline-primary" id="dropdownBasic2" ngbDropdownToggle>Order</button>
+      <div ngbDropdownMenu aria-labelledby="dropdownBasic2">
+        <button ngbDropdownItem (click)="setorder('clickcount')">clickcount</button>
+        <button ngbDropdownItem (click)="setorder('name')">name</button>
+        <button ngbDropdownItem (click)="setorder('random')">random</button>
+        <button ngbDropdownItem (click)="setorder('bitrate')">bitrate</button>
+        <button ngbDropdownItem (click)="setorder('lastchecktime')">lastchecktime</button>
+        <button ngbDropdownItem (click)="setorder('clicktimestamp')">clicktimestamp</button>
+        <button ngbDropdownItem (click)="setorder('changetimestamp')">changetimestamp</button>
+        <button ngbDropdownItem (click)="setorder('clicktrend')">clicktrend</button>
+        <button ngbDropdownItem (click)="setorder('votes')">votes</button>
+      </div>
+    </div>
+    <span class="searchoption" *ngFor="let option of displayOptions">
+      <span class="name">
+        {{ option.displayName }}
+      </span>
+      <span class="operator" *ngIf="!option.toggle">
+        {{ option.operator }}
+      </span>
+      <span class="value" *ngIf="!option.toggle">
+        {{ option.searchValue }}
+      </span>
+      <span class="toggle" aria-hidden="true" *ngIf="option.searchValue==='true'" (click)="toggle(option.key)">👍
+      </span>
+      <span class="toggle" aria-hidden="true" *ngIf="option.searchValue==='false'" (click)="toggle(option.key)">👎
+      </span>
+      <span class="remove" *ngIf="!option.unremovable" aria-hidden="true"
+        (click)="removeoption(option.key, option.searchValue)">&times;</span>
+      <span class="unremovable" *ngIf="option.unremovable" aria-hidden="true"></span>
+    </span>
+  </div>
+</div>
+<app-linklist></app-linklist>
+<div class="container">
+  <app-stationlist [stations]="stations"></app-stationlist>
+</div>
+<div class="container buttons" [ngClass]="{'pb-5': playerservice.isPlaying }" >
+  <div class="d-flex justify-content-center">
+    <button class="btn btn-xs btn-info mx-2" (click)="prevpage()">Prev page</button>
+    <button class="btn btn-xs btn-info mx-2" (click)="nextpage()">Next page</button>
+  </div>
+  <br />
+</div>
